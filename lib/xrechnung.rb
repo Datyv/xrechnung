@@ -168,6 +168,8 @@ module Xrechnung
     #   @return [Xrechnung::InvoiceDocumentReference]
     member :billing_reference, type: Xrechnung::InvoiceDocumentReference, optional: true
 
+    member :invoice_period, type: Xrechnung::InvoicePeriod, optional: true
+
     # Contract reference BT-12
     #
     # Eine eindeutige Bezeichnung des Vertrages (z. B. Vertragsnummer).

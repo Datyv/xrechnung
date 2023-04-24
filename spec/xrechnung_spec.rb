@@ -29,6 +29,10 @@ RSpec.describe Xrechnung do
     doc.billing_reference.id         = "Vorangegangene Rechnung 23423"
     doc.billing_reference.issue_date = Date.new(2020, 4, 23)
 
+    doc.invoice_period            = Xrechnung::InvoicePeriod.new
+    doc.invoice_period.start_date = Date.new(2021, 4, 20)
+    doc.invoice_period.end_date   = Date.new(2021, 4, 23)
+
     doc.contract_document_reference_id = "23871349"
     doc.project_reference_id           = "Bauvorhaben Glücksstraße 4"
 
