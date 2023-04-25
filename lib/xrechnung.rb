@@ -169,6 +169,8 @@ module Xrechnung
     #   @return [Xrechnung::InvoiceDocumentReference]
     member :billing_reference, type: Xrechnung::InvoiceDocumentReference, optional: true
 
+    # @!attribute invoice_period
+    #   @return [Xrechnung::InvoicePeriod]
     member :invoice_period, type: Xrechnung::InvoicePeriod, optional: true
 
     # Contract reference BT-12
@@ -263,7 +265,7 @@ module Xrechnung
           xml.cbc :Note, note
         end
 
-        xml.cbc :TaxPointDate, tax_point_date
+        xml.cbc :TaxPointDate, tax_point_date unless tax_point_date.nil?
         xml.cbc :DocumentCurrencyCode, document_currency_code
         xml.cbc :TaxCurrencyCode, tax_currency_code
         xml.cbc :BuyerReference, buyer_reference
@@ -278,6 +280,12 @@ module Xrechnung
         unless members[:billing_reference][:optional] && billing_reference.nil?
           xml.cac :BillingReference do
             billing_reference&.to_xml(xml)
+          end
+        end
+
+        unless members[:invoice_period][:optional] && invoice_period.nil?
+          xml.cac :InvoicePeriod do
+            invoice_period&.to_xml(xml)
           end
         end
 
