@@ -270,6 +270,10 @@ module Xrechnung
         xml.cbc :TaxCurrencyCode, tax_currency_code
         xml.cbc :BuyerReference, buyer_reference
 
+        unless members[:invoice_period][:optional] && invoice_period.nil?
+          invoice_period&.to_xml(xml)
+        end
+
         xml.cac :OrderReference do
           xml.cbc :ID, purchase_order_reference
           unless members[:sales_order_reference][:optional] && sales_order_reference.nil?
@@ -281,10 +285,6 @@ module Xrechnung
           xml.cac :BillingReference do
             billing_reference&.to_xml(xml)
           end
-        end
-
-        unless members[:invoice_period][:optional] && invoice_period.nil?
-          invoice_period&.to_xml(xml)
         end
 
         xml.cac :ContractDocumentReference do
