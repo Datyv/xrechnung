@@ -284,9 +284,7 @@ module Xrechnung
         end
 
         unless members[:invoice_period][:optional] && invoice_period.nil?
-          xml.cac :InvoicePeriod do
-            invoice_period&.to_xml(xml)
-          end
+          invoice_period&.to_xml(xml)
         end
 
         xml.cac :ContractDocumentReference do
