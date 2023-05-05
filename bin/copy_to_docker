@@ -1,0 +1,32 @@
+#!/bin/bash
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -c|--container) container="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+if [[ -z $container ]]; then
+  echo 'Environment missing: e.g. bin/copy_to_docker -c mycontainer'
+  exit 1
+fi
+
+command="bundle show xrechnung"
+gem_path=`docker exec -it $container $command`
+gem_path=${gem_path%$'\r'}
+lscmd="ls $gem_path/lib/xrechnung"
+
+docker exec -it $container $lscmd
+
+echo "Copy to $gem_path"
+docker cp . $container:$gem_path
+
+lscmd="ls $gem_path/lib/xrechnung"
+docker exec -it $container $lscmd
+
+restartcmd="touch tmp/restart.txt"
+docker exec -it $container $restartcmd
+
+echo -e "copied gem to $container"
