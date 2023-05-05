@@ -3,8 +3,8 @@ module Xrechnung
     include MemberContainer
 
     # @!attribute price_amount
-    #   @return [Xrechnung::Currency]
-    member :price_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :price_amount, type: Xrechnung::CurrencyLong
 
     # @!attribute base_quantity
     #   @return [Xrechnung::Quantity]
@@ -15,7 +15,7 @@ module Xrechnung
     member :allowance_charge, type: Xrechnung::AllowanceCharge
 
     def initialize(**kwargs)
-      kwargs[:price_amount] = Currency::EUR(kwargs[:price_amount])
+      kwargs[:price_amount] = CurrencyLong::EUR(kwargs[:price_amount])
       super(**kwargs)
     end
 

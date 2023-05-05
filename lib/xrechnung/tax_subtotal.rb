@@ -16,23 +16,23 @@ module Xrechnung
     include MemberContainer
 
     # @!attribute taxable_amount
-    #   @return [Xrechnung::Currency]
-    member :taxable_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :taxable_amount, type: Xrechnung::CurrencyLong
 
     # @!attribute tax_amount
-    #   @return [Xrechnung::Currency]
-    member :tax_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :tax_amount, type: Xrechnung::CurrencyLong
 
     # @!attribute tax_category
     #   @return [Xrechnung::TaxCategory]
     member :tax_category, type: Xrechnung::TaxCategory
 
     # @!attribute taxable_amount
-    #   @return [Xrechnung::Currency]
+    #   @return [Xrechnung::CurrencyLong]
 
     def initialize(**kwargs)
       super
-      self.taxable_amount ||= Currency::EUR(0)
+      self.taxable_amount ||= CurrencyLong::EUR(0)
     end
 
     # noinspection RubyResolve

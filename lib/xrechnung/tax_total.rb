@@ -27,8 +27,8 @@ module Xrechnung
     include MemberContainer
 
     # @!attribute tax_amount
-    #   @return [Xrechnung::Currency]
-    member :tax_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :tax_amount, type: Xrechnung::CurrencyLong
 
     # @!attribute tax_subtotals
     #   @return [Array]

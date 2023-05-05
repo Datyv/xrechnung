@@ -11,8 +11,8 @@ module Xrechnung
     member :invoiced_quantity, type: Xrechnung::Quantity
 
     # @!attribute line_extension_amount
-    #   @return [Xrechnung::Currency]
-    member :line_extension_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :line_extension_amount, type: Xrechnung::CurrencyLong
 
     # @!attribute item
     #   @return [Xrechnung::Item]
@@ -23,7 +23,7 @@ module Xrechnung
     member :price, type: Xrechnung::Price
 
     def initialize(**kwargs)
-      kwargs[:line_extension_amount] = Currency::EUR(kwargs[:line_extension_amount])
+      kwargs[:line_extension_amount] = CurrencyLong::EUR(kwargs[:line_extension_amount])
       super(**kwargs)
     end
 

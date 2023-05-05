@@ -1,6 +1,7 @@
 require "xrechnung/version"
 require "date"
 require "xrechnung/currency"
+require "xrechnung/currency_long"
 require "xrechnung/quantity"
 require "xrechnung/id"
 require "xrechnung/member_container"

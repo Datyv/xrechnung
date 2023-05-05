@@ -7,16 +7,16 @@ module Xrechnung
     member :charge_indicator, type: [TrueClass, FalseClass]
 
     # @!attribute amount
-    #   @return [Xrechnung::Currency]
-    member :amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :amount, type: Xrechnung::CurrencyLong
 
     # @!attribute base_amount
-    #   @return [Xrechnung::Currency]
-    member :base_amount, type: Xrechnung::Currency
+    #   @return [Xrechnung::CurrencyLong]
+    member :base_amount, type: Xrechnung::CurrencyLong
 
     def initialize(**kwargs)
-      kwargs[:amount]      = Currency::EUR(kwargs[:amount])
-      kwargs[:base_amount] = Currency::EUR(kwargs[:base_amount])
+      kwargs[:amount]      = CurrencyLong::EUR(kwargs[:amount])
+      kwargs[:base_amount] = CurrencyLong::EUR(kwargs[:base_amount])
       super(**kwargs)
     end
 
