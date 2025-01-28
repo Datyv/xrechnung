@@ -11,7 +11,7 @@ RSpec.describe Xrechnung do
   end
 
   it "has a version number" do
-    expect(Xrechnung::VERSION).not_to be nil
+    expect(Xrechnung::VERSION).not_to be_nil
   end
 
   # rubocop:disable RSpec/ExampleLength
@@ -30,8 +30,8 @@ RSpec.describe Xrechnung do
     doc.billing_reference.issue_date = Date.new(2020, 4, 23)
 
     doc.invoice_period            = Xrechnung::InvoicePeriod.new
-    doc.invoice_period.start_date = Date.new(2021, 4, 20)
-    doc.invoice_period.end_date   = Date.new(2021, 4, 23)
+    doc.invoice_period.start_date = Date.new(2021, 4, 1)
+    doc.invoice_period.end_date   = Date.new(2021, 4, 30)
 
     doc.contract_document_reference_id = "23871349"
     doc.project_reference_id           = "Bauvorhaben Glücksstraße 4"
@@ -39,7 +39,7 @@ RSpec.describe Xrechnung do
     doc.accounting_supplier_party = build_party
 
     doc.accounting_customer_party = Xrechnung::Party.new(
-      postal_address:     Xrechnung::PostalAddress.new(
+      postal_address:       Xrechnung::PostalAddress.new(
         street_name:            "Malerweg 2",
         additional_street_name: "Hinterhof A",
         city_name:              "Großstadt",
@@ -50,10 +50,10 @@ RSpec.describe Xrechnung do
       party_identification: Xrechnung::PartyIdentification.new(
         id: "70012",
       ),
-      party_legal_entity: Xrechnung::PartyLegalEntity.new(
+      party_legal_entity:   Xrechnung::PartyLegalEntity.new(
         registration_name: "Bauamt GmbH & Co KG",
       ),
-      contact:            Xrechnung::Contact.new(
+      contact:              Xrechnung::Contact.new(
         name:            "Manfred Mustermann",
         telephone:       "+49 12345 98 765 - 44",
         electronic_mail: "manfred.mustermann@bauamt.de",
@@ -72,6 +72,7 @@ RSpec.describe Xrechnung do
       ),
       party_tax_scheme: Xrechnung::PartyTaxScheme.new(
         tax_scheme_id: "VAT",
+        company_id:    "DE214365879"
       ),
       nested:           false,
     )
@@ -84,10 +85,11 @@ RSpec.describe Xrechnung do
 
     doc.legal_monetary_total = build_legal_monetary_total
 
-    doc.invoice_lines << build_invoice_line
+    doc.invoice_lines << build_invoice_line_with_allowance_charge
 
     doc.invoice_lines << Xrechnung::InvoiceLine.new(
       id:                    1,
+      invoice_period:        Xrechnung::InvoicePeriod.new(start_date: Date.new(2021, 4, 7), end_date: Date.new(2021, 4, 13)),
       invoiced_quantity:     Xrechnung::Quantity.new(5, "XPP"),
       line_extension_amount: 1285.70,
       item:                  Xrechnung::Item.new(
@@ -103,9 +105,9 @@ RSpec.describe Xrechnung do
       ),
       price:                 Xrechnung::Price.new(
         price_amount:     257.14,
-        base_quantity:    Xrechnung::Quantity.new(0, "XPP"),
+        base_quantity:    Xrechnung::Quantity.new(1, "XPP"),
         allowance_charge: Xrechnung::AllowanceCharge.new(
-          charge_indicator: true,
+          charge_indicator: false,
           amount:           0,
           base_amount:      257.14,
         ),
@@ -134,5 +136,14 @@ RSpec.describe Xrechnung do
 
   it "sets defaults" do
     expect(doc.to_xml).to include "<cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>"
+  end
+
+  it "thread safe initializer" do
+    doc1 = ::Xrechnung::Document.new
+    doc2 = ::Xrechnung::Document.new
+
+    doc1.invoice_lines << Xrechnung::InvoiceLine.new
+
+    expect(doc2.invoice_lines).to be_empty # Fails - doc1 and doc2 have the same invoice lines
   end
 end

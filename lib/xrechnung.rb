@@ -5,6 +5,7 @@ require "xrechnung/currency_long"
 require "xrechnung/quantity"
 require "xrechnung/id"
 require "xrechnung/member_container"
+require "xrechnung/additional_document_reference"
 require "xrechnung/contact"
 require "xrechnung/party_identification"
 require "xrechnung/party_legal_entity"
@@ -12,6 +13,8 @@ require "xrechnung/party_tax_scheme"
 require "xrechnung/postal_address"
 require "xrechnung/party"
 require "xrechnung/payee_financial_account"
+require "xrechnung/payment_mandate"
+require "xrechnung/payee_party"
 require "xrechnung/payment_means"
 require "xrechnung/tax_total"
 require "xrechnung/tax_category"
@@ -30,6 +33,22 @@ module Xrechnung
 
   class Document
     include MemberContainer
+
+    # Default customization specs
+    DEFAULT_CUSTOMIZATION_ID = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"
+    DEFAULT_PROFILE_ID       = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
+
+    # Document customization identifier
+    #
+    # @!attribute customization_id
+    #   @return [String]
+    member :customization_id, type: String, default: DEFAULT_CUSTOMIZATION_ID
+
+    # Document profile identifier
+    #
+    # @!attribute profile_id
+    #   @return [String]
+    member :profile_id, type: String, default: DEFAULT_PROFILE_ID
 
     # Invoice number BT-1
     #
@@ -102,7 +121,7 @@ module Xrechnung
     #
     # @!attribute purchase_order_reference
     #   @return [String]
-    member :purchase_order_reference, type: String
+    member :purchase_order_reference, type: String, optional: true
 
     # Sales order reference BT-14
     #
@@ -148,7 +167,7 @@ module Xrechnung
     #
     # @!attribute tax_currency_code
     #   @return [String]
-    member :tax_currency_code, type: String, default: "EUR"
+    member :tax_currency_code, type: String
 
     # Buyer reference BT-10
     #
@@ -170,6 +189,11 @@ module Xrechnung
     #   @return [Xrechnung::InvoiceDocumentReference]
     member :billing_reference, type: Xrechnung::InvoiceDocumentReference, optional: true
 
+    # Additional supporting documents BG-24
+    # @!attribute additional_document_references
+    #   @return [Array]
+    member :additional_document_references, type: Array, default: []
+
     # @!attribute invoice_period
     #   @return [Xrechnung::InvoicePeriod]
     member :invoice_period, type: Xrechnung::InvoicePeriod, optional: true
@@ -180,7 +204,7 @@ module Xrechnung
     #
     # @!attribute contract_document_reference_id
     #   @return [String]
-    member :contract_document_reference_id, type: String
+    member :contract_document_reference_id, type: String, optional: true
 
     # Project reference BT-11
     #
@@ -188,7 +212,7 @@ module Xrechnung
     #
     # @!attribute project_reference_id
     #   @return [String]
-    member :project_reference_id, type: String
+    member :project_reference_id, type: String, optional: true
 
     # SELLER TAX REPRESENTATIVE PARTY BG-11
     #
@@ -207,6 +231,15 @@ module Xrechnung
     # @!attribute payment_means
     #   @return [Xrechnung::PaymentMeans]
     member :payment_means, type: Xrechnung::PaymentMeans
+
+    # PAYEE PARTY BG-10
+    #
+    # A group of business terms providing information about the Payee, i.e. the role that receives
+    # the payment. Shall be used when the Payee is different from the Seller.
+    #
+    # @!attribute payee_party
+    #   @return [Xrechnung::PayeeParty]
+    member :payee_party, type: Xrechnung::PayeeParty, optional: true
 
     # Payment terms BT-20
     #
@@ -246,6 +279,17 @@ module Xrechnung
     #   @return [Array]
     member :invoice_lines, type: Array, default: []
 
+    # DOCUMENT LEVEL ALLOWANCES AND CHARGES BG-20, BG-21
+    #
+    # A group of business terms providing information about allowances
+    # applicable to the Invoice as a whole. A group of business terms providing
+    # information about charges and taxes other than VAT, applicable to the
+    # Invoice as a whole.
+    #
+    # @!attribute allowance_charges
+    #   @return [Array]
+    member :allowance_charges, type: Array, default: []
+
     def to_xml(indent: 2, target: "")
       xml = Builder::XmlMarkup.new(indent: indent, target: target)
       xml.instruct! :xml, version: "1.0", encoding: "UTF-8"
@@ -256,7 +300,8 @@ module Xrechnung
         "xmlns:cbc"          => "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
         "xmlns:xsi"          => "http://www.w3.org/2001/XMLSchema-instance",
         "xsi:schemaLocation" => "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd" do
-        xml.cbc :CustomizationID, "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_2.2"
+        xml.cbc :CustomizationID, customization_id
+        xml.cbc :ProfileID, profile_id
         xml.cbc :ID, id
         xml.cbc :IssueDate, issue_date
         xml.cbc :DueDate, due_date
@@ -268,33 +313,42 @@ module Xrechnung
 
         xml.cbc :TaxPointDate, tax_point_date unless tax_point_date.nil?
         xml.cbc :DocumentCurrencyCode, document_currency_code
-        xml.cbc :TaxCurrencyCode, tax_currency_code
+        xml.cbc :TaxCurrencyCode, tax_currency_code unless tax_currency_code.nil?
         xml.cbc :BuyerReference, buyer_reference
 
-        unless members[:invoice_period][:optional] && invoice_period.nil?
-          invoice_period&.to_xml(xml)
-        end
+        invoice_period&.to_xml(xml) unless self.class.members[:invoice_period].optional && invoice_period.nil?
 
-        xml.cac :OrderReference do
-          xml.cbc :ID, purchase_order_reference
-          unless members[:sales_order_reference][:optional] && sales_order_reference.nil?
-            xml.cbc :SalesOrderID, sales_order_reference
+        unless self.class.members[:purchase_order_reference].optional && purchase_order_reference.nil? &&
+               self.class.members[:sales_order_reference].optional && sales_order_reference.nil?
+          xml.cac :OrderReference do
+            unless self.class.members[:purchase_order_reference].optional && purchase_order_reference.nil?
+              xml.cbc :ID, purchase_order_reference
+            end
+            unless self.class.members[:sales_order_reference].optional && sales_order_reference.nil?
+              xml.cbc :ID, sales_order_reference
+            end
           end
         end
 
-        unless members[:billing_reference][:optional] && billing_reference.nil?
+        unless self.class.members[:billing_reference].optional && billing_reference.nil?
           xml.cac :BillingReference do
             billing_reference&.to_xml(xml)
           end
         end
 
-        xml.cac :ContractDocumentReference do
-          xml.cbc :ID, contract_document_reference_id
+        unless self.class.members[:contract_document_reference_id].optional && contract_document_reference_id.nil?
+          xml.cac :ContractDocumentReference do
+            xml.cbc :ID, contract_document_reference_id
+          end
         end
 
-        xml.cac :ProjectReference do
-          xml.cbc :ID, project_reference_id
+        unless self.class.members[:project_reference_id].optional && project_reference_id.nil?
+          xml.cac :ProjectReference do
+            xml.cbc :ID, project_reference_id
+          end
         end
+
+        additional_document_references.each { _1.to_xml(xml) }
 
         xml.cac :AccountingSupplierParty do
           accounting_supplier_party&.to_xml(xml)
@@ -304,7 +358,7 @@ module Xrechnung
           accounting_customer_party&.to_xml(xml)
         end
 
-        unless members[:tax_representative_party][:optional] && tax_representative_party.nil?
+        unless self.class.members[:tax_representative_party].optional && tax_representative_party.nil?
           xml.cac :TaxRepresentativeParty do
             tax_representative_party&.to_xml(xml)
           end
@@ -314,9 +368,13 @@ module Xrechnung
           payment_means&.to_xml(xml)
         end
 
+        payee_party&.to_xml(xml) unless self.class.members[:payee_party].optional && payee_party.nil?
+
         xml.cac :PaymentTerms do
           xml.cbc :Note, payment_terms_note
         end
+
+        allowance_charges.each { _1.to_xml(xml) }
 
         xml.cac :TaxTotal do
           tax_total&.to_xml(xml)
@@ -326,9 +384,7 @@ module Xrechnung
           legal_monetary_total&.to_xml(xml)
         end
 
-        invoice_lines.each do |invoice_line|
-          invoice_line&.to_xml(xml)
-        end
+        invoice_lines.each { _1.to_xml(xml) }
       end
 
       target

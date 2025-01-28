@@ -1,6 +1,8 @@
 <cac:TaxCategory>
   <cbc:ID>S</cbc:ID>
   <cbc:Percent>16.00</cbc:Percent>
+  <cbc:TaxExemptionReasonCode>VATEX-EU-S</cbc:TaxExemptionReasonCode>
+  <cbc:TaxExemptionReason>Exempt</cbc:TaxExemptionReason>
   <cac:TaxScheme>
     <cbc:ID>VAT</cbc:ID>
   </cac:TaxScheme>

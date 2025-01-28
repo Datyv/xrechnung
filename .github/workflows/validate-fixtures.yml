@@ -1,13 +1,13 @@
 name: Validate spec fixtures
 
-on: push
+on: [push, pull_request]
 
 jobs:
   validate:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - uses: actions/setup-java@v2
       with:
@@ -16,7 +16,7 @@ jobs:
 
     - uses: ruby/setup-ruby@v1
       with:
-        ruby-version:  "2.7"
+        ruby-version:  "3.2"
         bundler-cache: true
 
     - name: Prepare validator
@@ -25,7 +25,7 @@ jobs:
     - name: Run validator
       run: bundle exec rake validator:run
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: validation-results

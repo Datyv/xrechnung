@@ -1,3 +1,5 @@
+require "xrechnung/invoice_period"
+
 module Xrechnung
   class InvoiceLine
     include MemberContainer
@@ -14,6 +16,10 @@ module Xrechnung
     #   @return [Xrechnung::CurrencyLong]
     member :line_extension_amount, type: Xrechnung::CurrencyLong
 
+    # @!attribute invoice_period
+    #   @return [Xrechnung::InvoicePeriod]
+    member :invoice_period, type: Xrechnung::InvoicePeriod, optional: true
+
     # @!attribute item
     #   @return [Xrechnung::Item]
     member :item, type: Xrechnung::Item
@@ -22,8 +28,14 @@ module Xrechnung
     #   @return [Xrechnung::Price]
     member :price, type: Xrechnung::Price
 
+    # @!attribute allowance_charges
+    #   @return [Array<Xrechnung::AllowanceCharge>]
+    member :allowance_charges, type: Array, default: []
+
     def initialize(**kwargs)
-      kwargs[:line_extension_amount] = CurrencyLong::EUR(kwargs[:line_extension_amount])
+      unless kwargs[:line_extension_amount].is_a?(Currency)
+        kwargs[:line_extension_amount] = Currency::EUR(kwargs[:line_extension_amount])
+      end
       super(**kwargs)
     end
 
@@ -33,6 +45,11 @@ module Xrechnung
         xml.cbc :ID, id
         xml.cbc :InvoicedQuantity, invoiced_quantity.amount_to_s, unitCode: invoiced_quantity.unit_code
         xml.cbc :LineExtensionAmount, *line_extension_amount.xml_args
+
+        invoice_period&.to_xml(xml) unless self.class.members[:invoice_period].optional && invoice_period.nil?
+        allowance_charges.each do |allowance_charge|
+          allowance_charge.to_xml(xml)
+        end
         item&.to_xml(xml)
         price&.to_xml(xml)
       end

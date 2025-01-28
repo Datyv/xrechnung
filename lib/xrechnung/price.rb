@@ -15,7 +15,7 @@ module Xrechnung
     member :allowance_charge, type: Xrechnung::AllowanceCharge
 
     def initialize(**kwargs)
-      kwargs[:price_amount] = CurrencyLong::EUR(kwargs[:price_amount])
+      kwargs[:price_amount] = Currency::EUR(kwargs[:price_amount]) unless kwargs[:price_amount].is_a?(Currency)
       super(**kwargs)
     end
 
@@ -23,7 +23,7 @@ module Xrechnung
     def to_xml(xml)
       xml.cac :Price do
         xml.cbc :PriceAmount, *price_amount.xml_args
-        xml.cbc :BaseQuantity, *base_quantity.xml_args
+        xml.cbc(:BaseQuantity, *base_quantity.xml_args) unless base_quantity.nil?
         allowance_charge&.to_xml(xml)
       end
     end
