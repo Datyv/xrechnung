@@ -15,7 +15,7 @@ module Xrechnung
     member :allowance_charge, type: Xrechnung::AllowanceCharge
 
     def initialize(**kwargs)
-      kwargs[:price_amount] = Currency::EUR(kwargs[:price_amount]) unless kwargs[:price_amount].is_a?(Currency)
+      kwargs[:price_amount] = CurrencyLong::EUR(kwargs[:price_amount]) unless kwargs[:price_amount].is_a?(CurrencyLong)
       super(**kwargs)
     end
 

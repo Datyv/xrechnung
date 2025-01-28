@@ -33,8 +33,8 @@ module Xrechnung
     member :allowance_charges, type: Array, default: []
 
     def initialize(**kwargs)
-      unless kwargs[:line_extension_amount].is_a?(Currency)
-        kwargs[:line_extension_amount] = Currency::EUR(kwargs[:line_extension_amount])
+      unless kwargs[:line_extension_amount].is_a?(CurrencyLong)
+        kwargs[:line_extension_amount] = CurrencyLong::EUR(kwargs[:line_extension_amount])
       end
       super(**kwargs)
     end

@@ -7,8 +7,8 @@ def build_tax_total
       build_tax_subtotal,
 
       Xrechnung::TaxSubtotal.new(
-        taxable_amount: Xrechnung::Currency::EUR(1285.70),
-        tax_amount:     Xrechnung::Currency::EUR(90.00),
+        taxable_amount: Xrechnung::CurrencyLong::EUR(1285.70),
+        tax_amount:     Xrechnung::CurrencyLong::EUR(90.00),
         tax_category:   Xrechnung::TaxCategory.new(
           id:            "S",
           percent:       7,

@@ -23,20 +23,20 @@ module Xrechnung
     member :amount, type: Xrechnung::CurrencyLong
 
     # @!attribute base_amount
-    #   @return [Xrechnung::Currency]
-    member :base_amount, type: Xrechnung::Currency, optional: true
+    #   @return [Xrechnung::CurrencyLong]
+    member :base_amount, type: Xrechnung::CurrencyLong, optional: true
 
     # @!attribute tax_category
     #   @return [Xrechnung::TaxCategory]
     member :tax_category, type: Xrechnung::TaxCategory
 
     def initialize(**kwargs)
-      unless kwargs[:amount].is_a?(Currency)
-        kwargs[:amount] = Currency::EUR(kwargs[:amount])
+      unless kwargs[:amount].is_a?(CurrencyLong)
+        kwargs[:amount] = CurrencyLong::EUR(kwargs[:amount])
       end
 
-      unless kwargs[:base_amount].is_a?(Currency) || kwargs[:base_amount].nil?
-        kwargs[:base_amount] = Currency::EUR(kwargs[:base_amount])
+      unless kwargs[:base_amount].is_a?(CurrencyLong) || kwargs[:base_amount].nil?
+        kwargs[:base_amount] = CurrencyLong::EUR(kwargs[:base_amount])
       end
 
       super(**kwargs)
