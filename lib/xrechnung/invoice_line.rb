@@ -28,6 +28,10 @@ module Xrechnung
     #   @return [Xrechnung::Price]
     member :price, type: Xrechnung::Price
 
+    # @!attribute price
+    #   @return [Xrechnung::Price]
+    member :buyer_accounting_reference, type: String, optional: true
+
     # @!attribute allowance_charges
     #   @return [Array<Xrechnung::AllowanceCharge>]
     member :allowance_charges, type: Array, default: []
@@ -45,6 +49,7 @@ module Xrechnung
         xml.cbc :ID, id
         xml.cbc :InvoicedQuantity, invoiced_quantity.amount_to_s, unitCode: invoiced_quantity.unit_code
         xml.cbc :LineExtensionAmount, *line_extension_amount.xml_args
+        xml.cbc :BuyerAccountingReference, buyer_accounting_reference if buyer_accounting_reference.present?
 
         invoice_period&.to_xml(xml) unless self.class.members[:invoice_period].optional && invoice_period.nil?
         allowance_charges.each do |allowance_charge|
